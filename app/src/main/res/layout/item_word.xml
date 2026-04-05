@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginTop="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvWord"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="abandon"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#212121" />
+
+                <TextView
+                    android:id="@+id/tvType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="四级"
+                    android:textSize="11sp"
+                    android:textColor="#FFFFFF"
+                    android:background="#90A4AE"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvPhonetic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="[əˈbændən]"
+                android:textSize="13sp"
+                android:textColor="#757575" />
+
+            <TextView
+                android:id="@+id/tvDefinition"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="放弃；遗弃"
+                android:textSize="15sp"
+                android:textColor="#424242"
+                android:maxLines="2"
+                android:ellipsize="end" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/ivCollect"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@android:drawable/btn_star_big_off"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

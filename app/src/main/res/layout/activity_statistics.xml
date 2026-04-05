@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="学习统计"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 统计卡片 -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvTotalWords"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="词库总量：-"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/tvCustomWords"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="自定义单词：-"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/tvTotalStudied"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="累计学习：-"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/tvTodayReview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="今日已复习：-"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/tvTotalErrors"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="错题总数：-"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/tvTodayStats"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="今日统计：-"
+                    android:textSize="15sp"
+                    android:textColor="#1976D2" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 今日默写结果图表 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="今日默写分布"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginBottom="8dp" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp">
+
+            <ImageView
+                android:id="@+id/chartView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:visibility="gone" />
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+</ScrollView>

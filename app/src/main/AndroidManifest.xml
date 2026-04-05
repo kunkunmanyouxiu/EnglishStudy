@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 本地存储权限 (读取模型文件/词库文件) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+    <!-- 相机权限 (可选，用于纸质单词拍照识别) -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- 声明相机特性为非必须，允许无相机设备安装 -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MyApplication"
+        android:largeHeap="true"
+        tools:targetApi="31">
+
+        <!-- 主页 -->
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- 默写页面 -->
+        <activity
+            android:name=".ui.DictationActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- 词库管理页面 -->
+        <activity
+            android:name=".ui.WordLibraryActivity"
+            android:exported="false" />
+
+        <!-- 自定义单词上传页面 -->
+        <activity
+            android:name=".ui.CustomWordUploadActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- 复习页面 -->
+        <activity
+            android:name=".ui.ReviewActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- 学习统计页面 -->
+        <activity
+            android:name=".ui.StatisticsActivity"
+            android:exported="false" />
+
+        <!-- 错题本页面 -->
+        <activity
+            android:name=".ui.ErrorWordsActivity"
+            android:exported="false" />
+
+        <!-- 自定义词库管理页面 -->
+        <activity
+            android:name=".ui.CustomBookManagerActivity"
+            android:exported="false" />
+
+        <!-- 导入词库页面 -->
+        <activity
+            android:name=".ui.ImportWordBookActivity"
+            android:exported="false" />
+
+    </application>
+
+</manifest>

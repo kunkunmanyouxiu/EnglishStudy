@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:fitsSystemWindows="true">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="导入词库"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" />
+
+    <Button
+        android:id="@+id/btnSelectFile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="📁 选择 CSV 文件"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/tvFileInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="请选择 CSV 文件"
+        android:textSize="14sp"
+        android:layout_marginBottom="24dp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tvProgress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="14sp"
+        android:layout_marginBottom="24dp" />
+
+    <Button
+        android:id="@+id/btnImport"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="✅ 开始导入"
+        android:textSize="16sp" />
+
+</LinearLayout>

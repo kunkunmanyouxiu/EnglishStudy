@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 标题区 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="英语默写"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginBottom="4dp" />
+
+        <!-- 模型状态 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <ProgressBar
+                android:id="@+id/progressModel"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="8dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvModelStatus"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="AI 模型加载中..."
+                android:textSize="13sp"
+                android:textColor="#757575" />
+        </LinearLayout>
+
+        <!-- 今日统计 -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvTodayReview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="今日待复习：0 词"
+                    android:textSize="15sp"
+                    android:textColor="#1976D2"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/tvTotalWords"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="词库总量：0 词"
+                    android:textSize="14sp"
+                    android:textColor="#424242" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 默写按钮 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="开始默写"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btnDictationEnToCn"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="英文 → 中文 默写"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="#1976D2" />
+
+        <Button
+            android:id="@+id/btnDictationCnToEn"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="中文 → 英文 默写"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#388E3C" />
+
+        <!-- 复习 -->
+        <Button
+            android:id="@+id/btnReview"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="今日复习（艾宾浩斯）"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#F57C00" />
+
+        <!-- 其他功能 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="功能"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <Button
+                android:id="@+id/btnWordLibrary"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="词库管理"
+                android:textSize="14sp"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="#7B1FA2" />
+
+            <Button
+                android:id="@+id/btnCustomBook"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="自定义词库"
+                android:textSize="14sp"
+                android:backgroundTint="#00838F" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnErrorWords"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="错题本"
+                android:textSize="14sp"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="#C62828" />
+
+            <Button
+                android:id="@+id/btnStatistics"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="学习统计"
+                android:textSize="14sp"
+                android:backgroundTint="#455A64" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">英语默写</string>
+    <string name="model_loading">AI 模型加载中...</string>
+    <string name="model_ready">AI 模型已就绪</string>
+    <string name="model_failed">模型加载失败，请重启 APP</string>
+    <string name="judging">判题中，请稍候...</string>
+    <string name="pre_judging">预判断中，请稍候...</string>
+    <string name="result_correct">正确</string>
+    <string name="result_partial">部分正确</string>
+    <string name="result_wrong">错误</string>
+    <string name="upload_success">上传成功！</string>
+    <string name="book_created">词库创建成功</string>
+    <string name="book_deleted">词库已删除</string>
+</resources>

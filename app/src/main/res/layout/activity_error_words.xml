@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F5F5"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="#FFFFFF">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="错题本"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvErrorCount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="共 0 个错题"
+            android:textSize="14sp"
+            android:textColor="#757575"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btnPracticeErrors"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="开始错题默写练习"
+            android:backgroundTint="#C62828" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvErrorWords"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp" />
+</LinearLayout>
