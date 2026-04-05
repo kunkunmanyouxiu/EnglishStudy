@@ -77,7 +77,7 @@
 访问以下链接，点击文件名旁的下载按钮：
 
 ```
-https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm](https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/tree/main
+https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/tree/main
 ```
 
 进入页面后，点击顶部的 **"Files and versions"** 选项卡，找到 `gemma-4-E4B-it.litertlm`（3.65 GB），点击下载箭头。
