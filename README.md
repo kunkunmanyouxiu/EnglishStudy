@@ -77,33 +77,11 @@
 访问以下链接，点击文件名旁的下载按钮：
 
 ```
-https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm
+https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm](https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/tree/main
 ```
 
 进入页面后，点击顶部的 **"Files and versions"** 选项卡，找到 `gemma-4-E4B-it.litertlm`（3.65 GB），点击下载箭头。
 
-**方式二：使用 huggingface-cli 下载**
-
-```bash
-# 安装 huggingface_hub
-pip install huggingface_hub
-
-# 下载模型文件
-huggingface-cli download litert-community/gemma-4-E4B-it-litert-lm \
-    gemma-4-E4B-it.litertlm \
-    --local-dir ./model_download
-```
-
-**方式三：使用 wget / curl**
-
-```bash
-# 需要先在 huggingface.co 注册账号并生成 Access Token
-wget --header="Authorization: Bearer YOUR_HF_TOKEN" \
-    "https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/gemma-4-E4B-it.litertlm" \
-    -O gemma-4-E4B-it.litertlm
-```
-
-> **注意：** 下载速度取决于网络，3.65 GB 文件在普通网络下可能需要 10~60 分钟。
 
 ### 第二步：将模型文件放入 assets 目录
 
