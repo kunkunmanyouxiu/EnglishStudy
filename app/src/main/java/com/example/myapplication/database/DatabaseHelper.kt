@@ -3,13 +3,18 @@ package com.example.myapplication.database
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
+import java.nio.charset.Charset
 
 class DatabaseHelper(context: Context) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
+    private val appContext = context.applicationContext
+
     companion object {
         const val DATABASE_NAME = "english_study.db"
-        const val DATABASE_VERSION = 1
+        const val DATABASE_VERSION = 3
+        private const val TAG = "DatabaseHelper"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -18,17 +23,20 @@ class DatabaseHelper(context: Context) :
         db.execSQL(SQL_CREATE_ERROR_WORDS)
         db.execSQL(SQL_CREATE_WORD_CATEGORY)
         db.execSQL(SQL_CREATE_CUSTOM_WORD_BOOK)
-        insertDefaultCategories(db)
+        db.execSQL(SQL_CREATE_LEARNED_WORDS)
+        ensureBuiltInCategories(db)
+        importBuiltInWordBooks(db)
         // insertSampleWords(db) // 注释掉，不插入示例数据
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL("DROP TABLE IF EXISTS words")
-        db.execSQL("DROP TABLE IF EXISTS study_records")
-        db.execSQL("DROP TABLE IF EXISTS error_words")
-        db.execSQL("DROP TABLE IF EXISTS word_category")
-        db.execSQL("DROP TABLE IF EXISTS custom_word_book")
-        onCreate(db)
+        if (oldVersion < 2) {
+            db.execSQL(SQL_CREATE_LEARNED_WORDS)
+        }
+        if (oldVersion < 3) {
+            ensureBuiltInCategories(db)
+            importBuiltInWordBooks(db)
+        }
     }
 
     override fun onConfigure(db: SQLiteDatabase) {
@@ -93,10 +101,138 @@ class DatabaseHelper(context: Context) :
         )
     """.trimIndent()
 
-    private fun insertDefaultCategories(db: SQLiteDatabase) {
-        val categories = listOf("四级", "六级", "考研", "雅思", "托福")
+    private val SQL_CREATE_LEARNED_WORDS = """
+        CREATE TABLE IF NOT EXISTS learned_words (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            word_id INTEGER NOT NULL,
+            learned_date TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(word_id, learned_date),
+            FOREIGN KEY (word_id) REFERENCES words(id) ON DELETE CASCADE
+        )
+    """.trimIndent()
+
+    private fun ensureBuiltInCategories(db: SQLiteDatabase) {
+        // 旧版本分类迁移
+        db.execSQL("UPDATE words SET word_type = '考研英语' WHERE word_type = '考研' AND is_custom = 0")
+        db.execSQL("UPDATE word_category SET category_name = '考研英语' WHERE category_name = '考研'")
+        db.execSQL(
+            """
+            DELETE FROM word_category
+            WHERE category_name = '雅思'
+              AND is_custom = 0
+              AND NOT EXISTS (
+                  SELECT 1 FROM words WHERE word_type = '雅思' AND is_custom = 0
+              )
+            """.trimIndent()
+        )
+        db.execSQL("DELETE FROM word_category WHERE category_name = '考研'")
+
+        val categories = listOf("四级", "六级", "考研英语", "SAT", "托福", "初中英语", "高中英语")
         categories.forEach { name ->
-            db.execSQL("INSERT INTO word_category (category_name, is_custom) VALUES ('$name', 0)")
+            val cursor = db.rawQuery(
+                "SELECT 1 FROM word_category WHERE category_name = ? LIMIT 1",
+                arrayOf(name)
+            )
+            val exists = cursor.use { it.moveToFirst() }
+            if (!exists) {
+                db.execSQL(
+                    "INSERT INTO word_category (category_name, is_custom) VALUES (?, 0)",
+                    arrayOf(name)
+                )
+            }
+        }
+    }
+
+    private fun importBuiltInWordBooks(db: SQLiteDatabase) {
+        val builtinFiles = listOf(
+            "cet4.csv" to "四级",
+            "cet6.csv" to "六级",
+            "graduate.csv" to "考研英语",
+            "sat.csv" to "SAT",
+            "toefl.csv" to "托福",
+            "junior.csv" to "初中英语",
+            "senior.csv" to "高中英语"
+        )
+
+        db.beginTransaction()
+        try {
+            var totalInserted = 0
+            builtinFiles.forEach { (fileName, category) ->
+                totalInserted += importOneCsv(db, fileName, category)
+            }
+            db.setTransactionSuccessful()
+            Log.i(TAG, "内置词库导入完成，新增 $totalInserted 个单词")
+        } catch (e: Exception) {
+            Log.e(TAG, "导入内置词库失败: ${e.message}", e)
+        } finally {
+            db.endTransaction()
+        }
+    }
+
+    private fun importOneCsv(db: SQLiteDatabase, fileName: String, category: String): Int {
+        val content = readAssetCsv(fileName) ?: return 0
+        if (content.isBlank()) return 0
+
+        var inserted = 0
+        val lines = content
+            .split("\n")
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+
+        lines.forEachIndexed { index, line ->
+            if (index == 0 && line.startsWith("word", ignoreCase = true)) return@forEachIndexed
+
+            val firstComma = line.indexOf(',')
+            if (firstComma <= 0 || firstComma >= line.lastIndex) return@forEachIndexed
+
+            val word = line.substring(0, firstComma).trim().trim('"')
+            val definitionRaw = line.substring(firstComma + 1).trim()
+            val definition = definitionRaw.trim().trim('"')
+
+            if (word.isBlank() || definition.isBlank()) return@forEachIndexed
+
+            val existsCursor = db.rawQuery(
+                """
+                SELECT 1 FROM words
+                WHERE word = ?
+                  AND definition = ?
+                  AND word_type = ?
+                  AND is_custom = 0
+                LIMIT 1
+                """.trimIndent(),
+                arrayOf(word, definition, category)
+            )
+            val exists = existsCursor.use { it.moveToFirst() }
+            if (exists) return@forEachIndexed
+
+            db.execSQL(
+                """
+                INSERT INTO words
+                (word, phonetic, definition, example, word_type, is_collect, is_custom, custom_book_id)
+                VALUES (?, ?, ?, ?, ?, 0, 0, 0)
+                """.trimIndent(),
+                arrayOf(word, "", definition, "", category)
+            )
+            inserted++
+        }
+        return inserted
+    }
+
+    private fun readAssetCsv(fileName: String): String? {
+        return try {
+            val bytes = appContext.assets.open(fileName).use { it.readBytes() }
+
+            // 优先 UTF-8，如果出现大量替换字符则回退 GBK
+            val utf8 = bytes.toString(Charsets.UTF_8)
+            if (!utf8.contains("�")) {
+                utf8
+            } else {
+                bytes.toString(Charset.forName("GBK"))
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "读取内置词库失败: $fileName, ${e.message}")
+            null
         }
     }
 

@@ -106,8 +106,26 @@
             android:layout_height="56dp"
             android:text="中文 → 英文 默写"
             android:textSize="16sp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
             android:backgroundTint="#388E3C" />
+
+        <Button
+            android:id="@+id/btnLearnWords"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="学习单词（随机分页）"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="#5C6BC0" />
+
+        <Button
+            android:id="@+id/btnLearnedWords"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="查看已学习单词"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#8E24AA" />
 
         <!-- 复习 -->
         <Button

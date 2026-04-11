@@ -38,6 +38,7 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
     // 允许 ONNX 模型与 tokenizer 资源不被压缩
     androidResources {
         noCompress += listOf("onnx", "json")

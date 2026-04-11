@@ -137,6 +137,131 @@ class WordDao(private val context: Context) {
         return words
     }
 
+    fun getLearnedWordsByDate(category: String, customBookId: Int, learnedDate: String): List<Word> {
+        val db = dbHelper.readableDatabase
+        val words = mutableListOf<Word>()
+        try {
+            val cursor = if (customBookId > 0) {
+                db.rawQuery(
+                    """
+                    SELECT w.* FROM words w
+                    INNER JOIN learned_words lw ON lw.word_id = w.id
+                    WHERE lw.learned_date = ?
+                      AND w.is_custom = 1
+                      AND w.custom_book_id = ?
+                    ORDER BY RANDOM()
+                    """.trimIndent(),
+                    arrayOf(learnedDate, customBookId.toString())
+                )
+            } else {
+                db.rawQuery(
+                    """
+                    SELECT w.* FROM words w
+                    INNER JOIN learned_words lw ON lw.word_id = w.id
+                    WHERE lw.learned_date = ?
+                      AND w.is_custom = 0
+                      AND w.word_type = ?
+                    ORDER BY RANDOM()
+                    """.trimIndent(),
+                    arrayOf(learnedDate, category)
+                )
+            }
+            cursor.use { it.toWordList(words) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return words
+    }
+
+    fun getLearnedWordsByDate(learnedDate: String): List<Word> {
+        val db = dbHelper.readableDatabase
+        val words = mutableListOf<Word>()
+        try {
+            val cursor = db.rawQuery(
+                """
+                SELECT w.* FROM words w
+                INNER JOIN learned_words lw ON lw.word_id = w.id
+                WHERE lw.learned_date = ?
+                ORDER BY w.word_type, w.word COLLATE NOCASE
+                """.trimIndent(),
+                arrayOf(learnedDate)
+            )
+            cursor.use { it.toWordList(words) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return words
+    }
+
+    fun getAllLearnedWords(): List<Word> {
+        val db = dbHelper.readableDatabase
+        val words = mutableListOf<Word>()
+        try {
+            val cursor = db.rawQuery(
+                """
+                SELECT w.* FROM words w
+                INNER JOIN learned_words lw ON lw.word_id = w.id
+                GROUP BY w.id
+                ORDER BY MAX(lw.learned_date) DESC, w.word COLLATE NOCASE
+                """.trimIndent(),
+                null
+            )
+            cursor.use { it.toWordList(words) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return words
+    }
+
+    fun getLearnedWordsByCategory(category: String): List<Word> {
+        if (category == "全部") return getAllLearnedWords()
+
+        val db = dbHelper.readableDatabase
+        val words = mutableListOf<Word>()
+        try {
+            val catCursor = db.rawQuery(
+                "SELECT is_custom FROM word_category WHERE category_name = ? LIMIT 1",
+                arrayOf(category)
+            )
+            val isCustom = catCursor.use {
+                if (it.moveToFirst()) it.getInt(0) else 0
+            }
+
+            val cursor = if (isCustom == 1) {
+                val customBook = CustomWordBookDao(context).getCustomWordBookByName(category)
+                if (customBook == null) {
+                    return emptyList()
+                }
+                db.rawQuery(
+                    """
+                    SELECT w.* FROM words w
+                    INNER JOIN learned_words lw ON lw.word_id = w.id
+                    WHERE w.is_custom = 1 AND w.custom_book_id = ?
+                    GROUP BY w.id
+                    ORDER BY MAX(lw.learned_date) DESC, w.word COLLATE NOCASE
+                    """.trimIndent(),
+                    arrayOf(customBook.id.toString())
+                )
+            } else {
+                db.rawQuery(
+                    """
+                    SELECT w.* FROM words w
+                    INNER JOIN learned_words lw ON lw.word_id = w.id
+                    WHERE w.is_custom = 0 AND w.word_type = ?
+                    GROUP BY w.id
+                    ORDER BY MAX(lw.learned_date) DESC, w.word COLLATE NOCASE
+                    """.trimIndent(),
+                    arrayOf(category)
+                )
+            }
+
+            cursor.use { it.toWordList(words) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return words
+    }
+
     fun getCollectedWords(): List<Word> {
         val db = dbHelper.readableDatabase
         val words = mutableListOf<Word>()
@@ -192,6 +317,112 @@ class WordDao(private val context: Context) {
         )
         return cursor.use {
             if (it.moveToFirst()) it.getInt(0) else 0
+        }
+    }
+
+    fun getWordsPaged(
+        category: String,
+        customBookId: Int,
+        keyword: String?,
+        limit: Int,
+        offset: Int
+    ): List<Word> {
+        val db = dbHelper.readableDatabase
+        val words = mutableListOf<Word>()
+        try {
+            val whereParts = mutableListOf<String>()
+            val args = mutableListOf<String>()
+
+            buildCategoryFilter(db, category, customBookId, whereParts, args)
+
+            val normalizedKeyword = keyword?.trim().orEmpty()
+            if (normalizedKeyword.isNotBlank()) {
+                whereParts.add("(word LIKE ? OR definition LIKE ?)")
+                args.add("%$normalizedKeyword%")
+                args.add("%$normalizedKeyword%")
+            }
+
+            val whereClause = if (whereParts.isEmpty()) "1=1" else whereParts.joinToString(" AND ")
+            val sql = """
+                SELECT * FROM words
+                WHERE $whereClause
+                ORDER BY id DESC
+                LIMIT ? OFFSET ?
+            """.trimIndent()
+            args.add(limit.toString())
+            args.add(offset.toString())
+
+            val cursor = db.rawQuery(sql, args.toTypedArray())
+            cursor.use { it.toWordList(words) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return words
+    }
+
+    fun countWords(category: String, customBookId: Int, keyword: String?): Int {
+        val db = dbHelper.readableDatabase
+        return try {
+            val whereParts = mutableListOf<String>()
+            val args = mutableListOf<String>()
+
+            buildCategoryFilter(db, category, customBookId, whereParts, args)
+
+            val normalizedKeyword = keyword?.trim().orEmpty()
+            if (normalizedKeyword.isNotBlank()) {
+                whereParts.add("(word LIKE ? OR definition LIKE ?)")
+                args.add("%$normalizedKeyword%")
+                args.add("%$normalizedKeyword%")
+            }
+
+            val whereClause = if (whereParts.isEmpty()) "1=1" else whereParts.joinToString(" AND ")
+            val cursor = db.rawQuery(
+                "SELECT COUNT(*) FROM words WHERE $whereClause",
+                args.toTypedArray()
+            )
+            cursor.use {
+                if (it.moveToFirst()) it.getInt(0) else 0
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            0
+        }
+    }
+
+    private fun buildCategoryFilter(
+        db: android.database.sqlite.SQLiteDatabase,
+        category: String,
+        customBookId: Int,
+        whereParts: MutableList<String>,
+        args: MutableList<String>
+    ) {
+        if (customBookId != -1) {
+            whereParts.add("is_custom = 1 AND custom_book_id = ?")
+            args.add(customBookId.toString())
+            return
+        }
+
+        if (category == "全部") return
+
+        val catCursor = db.rawQuery(
+            "SELECT is_custom FROM word_category WHERE category_name = ? LIMIT 1",
+            arrayOf(category)
+        )
+        val isCustom = catCursor.use {
+            if (it.moveToFirst()) it.getInt(0) else 0
+        }
+
+        if (isCustom == 1) {
+            val customBook = CustomWordBookDao(context).getCustomWordBookByName(category)
+            if (customBook != null) {
+                whereParts.add("is_custom = 1 AND custom_book_id = ?")
+                args.add(customBook.id.toString())
+            } else {
+                whereParts.add("1 = 0")
+            }
+        } else {
+            whereParts.add("is_custom = 0 AND word_type = ?")
+            args.add(category)
         }
     }
 

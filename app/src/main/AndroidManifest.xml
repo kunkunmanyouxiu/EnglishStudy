@@ -59,6 +59,16 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- 学习单词页面 -->
+        <activity
+            android:name=".ui.LearnWordsActivity"
+            android:exported="false" />
+
+        <!-- 已学习单词页面 -->
+        <activity
+            android:name=".ui.LearnedWordsActivity"
+            android:exported="false" />
+
         <!-- 学习统计页面 -->
         <activity
             android:name=".ui.StatisticsActivity"

@@ -25,6 +25,8 @@ class DictationActivity : AppCompatActivity() {
         const val EXTRA_MODE = "extra_mode"
         const val EXTRA_CATEGORY = "extra_category"
         const val EXTRA_CUSTOM_BOOK_ID = "extra_custom_book_id"
+        const val EXTRA_WORD_LIMIT = "extra_word_limit"
+        const val EXTRA_LEARNED_DATE = "extra_learned_date"
         const val MODE_EN_TO_CN = 0
         const val MODE_CN_TO_EN = 1
     }
@@ -40,6 +42,8 @@ class DictationActivity : AppCompatActivity() {
     private var mode = MODE_EN_TO_CN
     private var category = "四级"
     private var customBookId = 0
+    private var wordLimit = 0
+    private var learnedDate = ""
     private var wordList = mutableListOf<Word>()
     private var currentIndex = 0
     private var isJudging = false
@@ -54,6 +58,8 @@ class DictationActivity : AppCompatActivity() {
         mode = intent.getIntExtra(EXTRA_MODE, MODE_EN_TO_CN)
         category = intent.getStringExtra(EXTRA_CATEGORY) ?: "四级"
         customBookId = intent.getIntExtra(EXTRA_CUSTOM_BOOK_ID, 0)
+        wordLimit = intent.getIntExtra(EXTRA_WORD_LIMIT, 0)
+        learnedDate = intent.getStringExtra(EXTRA_LEARNED_DATE) ?: ""
 
         ttsManager = TTSManager(this)
         loadWords()
@@ -63,17 +69,36 @@ class DictationActivity : AppCompatActivity() {
     private fun loadWords() {
         scope.launch(Dispatchers.IO) {
             val words = if (customBookId > 0) {
-                wordDao.getCustomWordsByBookId(customBookId)
+                if (learnedDate.isNotBlank()) {
+                    wordDao.getLearnedWordsByDate(category, customBookId, learnedDate)
+                } else {
+                    wordDao.getCustomWordsByBookId(customBookId)
+                }
             } else {
-                wordDao.getAllWordsByCategory(category)
+                if (learnedDate.isNotBlank()) {
+                    wordDao.getLearnedWordsByDate(category, customBookId, learnedDate)
+                } else {
+                    wordDao.getAllWordsByCategory(category)
+                }
             }
             withContext(Dispatchers.Main) {
                 if (words.isEmpty()) {
-                    Toast.makeText(this@DictationActivity, "「$category」词库为空，请先导入单词", Toast.LENGTH_LONG).show()
+                    val msg = if (learnedDate.isNotBlank()) {
+                        "「$category」在 $learnedDate 没有已学习单词"
+                    } else {
+                        "「$category」词库为空，请先导入单词"
+                    }
+                    Toast.makeText(this@DictationActivity, msg, Toast.LENGTH_LONG).show()
                     finish()
                     return@withContext
                 }
-                wordList = words.shuffled().toMutableList()
+                val shuffled = words.shuffled()
+                val selected = if (wordLimit > 0) {
+                    shuffled.take(minOf(wordLimit, shuffled.size))
+                } else {
+                    shuffled
+                }
+                wordList = selected.toMutableList()
                 currentIndex = 0
                 showCurrentWord()
             }
