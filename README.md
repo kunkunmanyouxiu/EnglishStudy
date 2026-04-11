@@ -1,27 +1,28 @@
-# EnglishStudy（ONNX 版）
+# EnglishStudy（当前主线：ONNX 语义判题）
 
-本项目已将原来的 Gemma 4 LiteRT LM 判题方案，切换为 Hugging Face `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` 的 ONNX 语义向量方案。
+一个纯本地运行的英语单词默写应用。
 
-## 1. 模型信息（来自模型页）
+当前版本已从旧的 Gemma LiteRT 方案迁移到 Hugging Face 句向量模型：
 
 - 模型：`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
-- 任务：多语言句向量（Sentence Embedding）
-- 典型输出维度：`384`
-- 典型最大序列长度：`128`
-- 池化方式：`mean pooling`
+- 推理方式：ONNX Runtime + tokenizer（Android 端）
+- 核心能力：语义判题 + 上传前语义匹配预判断
 
-项目中通过余弦相似度完成：
-- 默写判题（正确 / 部分正确 / 错误）
-- 自定义词条上传前预判断（高 / 中 / 低）
+## 1. 当前技术栈
 
-## 2. 你需要准备的 assets 文件
+- Android: `minSdk 26`, `targetSdk 36`, `compileSdk 36`
+- Kotlin JVM Target: `11`
+- 本地数据库: SQLite
+- AI 推理依赖: `io.gitlab.shubham0204:sentence-embeddings:v6`
 
-请把下面两个文件放到 `app/src/main/assets/`：
+关键配置文件：
 
-- `model.onnx`
-- `tokenizer.json`
+- `app/build.gradle.kts`
+- `app/src/main/java/com/example/myapplication/ai/ModelManager.kt`
 
-目录示例：
+## 2. 模型文件准备（必须）
+
+请将以下文件放入 `app/src/main/assets/`：
 
 ```text
 app/src/main/assets/
@@ -30,78 +31,95 @@ app/src/main/assets/
 ```
 
 说明：
-- 你已经放了 `model.onnx`。
-- 还需要从同一模型页面下载 `tokenizer.json`（否则应用会提示模型初始化失败）。
 
-## 3. 代码改动说明
+- `model.onnx`：你已放入（当前约 470MB）
+- `tokenizer.json`：必须存在（当前约 9MB）
+- 若缺失 `tokenizer.json`，应用初始化模型会失败
 
-### 3.1 推理框架
+## 3. 快速启动
 
-- 移除了 `LiteRT LM` 的对话式 Prompt 推理依赖。
-- 改为 `Sentence Embeddings Android`（底层 ONNX Runtime + tokenizer）。
-
-文件：`app/build.gradle.kts`
-
-### 3.2 AI 核心逻辑
-
-文件：`app/src/main/java/com/example/myapplication/ai/ModelManager.kt`
-
-主要变化：
-
-- 模型文件名从 `gemma-4-E4B-it.litertlm` 改为 `model.onnx`
-- 新增 `tokenizer.json` 读取
-- 初始化时创建 `SentenceEmbedding` 实例
-- `judge()` / `preJudge()` 改为：
-  1. 编码文本为向量
-  2. 计算余弦相似度
-  3. 按阈值映射到业务结果
-
-## 4. 判题阈值（当前实现）
-
-- 英 -> 中 判题：
-  - `>= 0.72`：正确
-  - `>= 0.55`：部分正确
-  - 其他：错误
-
-- 中 -> 英 判题：
-  - `>= 0.78`：正确
-  - `>= 0.58`：部分正确
-  - 其他：错误
-
-- 预判断（单词 vs 释义）：
-  - `>= 0.62`：高
-  - `>= 0.45`：中
-  - 其他：低
-
-可根据你的词库数据继续微调。
-
-## 5. 编译运行
+1. 打开项目（Android Studio）
+2. 同步 Gradle
+3. 构建：
 
 ```bash
-./gradlew clean assembleDebug
+./gradlew :app:assembleDebug -x test
 ```
 
-如果首次拉依赖较慢，属正常现象。
+4. 运行到设备/模拟器
+
+## 4. AI 判题逻辑（当前实现）
+
+### 4.1 双层判定
+
+- 第一层：规则快速判定（无需 AI）
+  - 英 -> 中：完全匹配（含分号分义匹配）直接判“正确”
+  - 中 -> 英：完全匹配判“正确”，编辑距离为 1 判“部分正确”
+- 第二层：ONNX 语义相似度判定
+  - 规则无法确定时，调用句向量模型计算余弦相似度
+
+### 4.2 阈值
+
+`ModelManager.kt` 当前阈值如下：
+
+- 英 -> 中：
+  - `>= 0.72` => 正确
+  - `>= 0.55` => 部分正确
+  - 其余 => 错误
+
+- 中 -> 英：
+  - `>= 0.78` => 正确
+  - `>= 0.58` => 部分正确
+  - 其余 => 错误
+
+- 上传前预判断（单词 vs 释义）：
+  - `>= 0.80` => 高
+  - `>= 0.45` => 中
+  - 其余 => 低
+
+## 5. 关键目录
+
+```text
+app/src/main/
+├── assets/
+│   ├── model.onnx
+│   └── tokenizer.json
+└── java/com/example/myapplication/
+    ├── ai/ModelManager.kt
+    ├── ui/DictationActivity.kt
+    ├── ui/CustomWordUploadActivity.kt
+    ├── database/
+    └── ...
+```
 
 ## 6. 常见问题
 
-### Q1: 提示找不到 tokenizer.json
+### Q1. Android Studio 里 `import com.ml.shubham0204...` 报红
 
-请确认路径：
+通常是 IDE 同步/索引缓存问题，不是代码包名错误。
+
+排查顺序：
+
+1. `File -> Sync Project with Gradle Files`
+2. 关闭 `Gradle Offline Work`（如果开启）
+3. `Build -> Rebuild Project`
+4. 仍不行：`File -> Invalidate Caches / Restart`
+
+### Q2. 模型初始化失败，提示找不到 tokenizer
+
+确认文件存在：
 
 ```text
 app/src/main/assets/tokenizer.json
 ```
 
-### Q2: 模型已就绪但判题效果不稳定
+### Q3. 判题偏松或偏严
 
-建议：
-- 优先清理输入中的噪声符号（项目中已做基础清洗）
-- 根据实际数据微调阈值
-- 适当增加“快速规则判定”覆盖率（例如固定短语、常见缩写）
+请基于你的真实词库微调阈值（`ModelManager.kt`），建议每次微调后做小样本回归验证。
 
-## 参考链接
+## 7. 参考链接
 
 - 模型主页：<https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2>
 - sentence_bert_config：<https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/blob/main/sentence_bert_config.json>
 - pooling 配置：<https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/blob/main/1_Pooling/config.json>
+- Android 句向量库：<https://github.com/shubham0204/Sentence-Embeddings-Android>
