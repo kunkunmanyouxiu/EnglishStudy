@@ -38,9 +38,9 @@ android {
     buildFeatures {
         viewBinding = true
     }
-    // 允许 assets 中的大文件
+    // 允许 ONNX 模型与 tokenizer 资源不被压缩
     androidResources {
-        noCompress += listOf("gguf", "bin", "tflite", "litertlm")
+        noCompress += listOf("onnx", "json")
     }
 }
 
@@ -51,8 +51,8 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
 
-    // LiteRT LM - 本地 AI 大模型推理
-    implementation("com.google.ai.edge.litertlm:litertlm-android:0.10.0")
+    // Sentence Embeddings (ONNX Runtime + tokenizer)
+    implementation("io.gitlab.shubham0204:sentence-embeddings:v6")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
